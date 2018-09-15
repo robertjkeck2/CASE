@@ -5,6 +5,7 @@ import os
 import re
 
 from bs4 import BeautifulSoup
+from fuzzywuzzy import fuzz
 import pdftotree
 import textract
 
@@ -12,21 +13,22 @@ import textract
 def parseArgs():
     parser = argparse.ArgumentParser(description='Add filename of case.')
     parser.add_argument('casefile', type=str, nargs='+', help='filename of case')
-    parser.add_argument('-v', '--verbose', help='increase output verbosity',
-                        action='store_true')
     args = parser.parse_args()
-    return args.casefile, args.verbose
+    return args.casefile
 
 def getSectionHeaders(casefile):
     tree = pdftotree.parse(casefile, html_path=None, model_type=None, model_path=None, favor_figures=True, visualize=False)
     parsed_html = BeautifulSoup(tree, features='html.parser')
     headers = parsed_html.find_all('section_header')
     titles = []
+    remove_titles = []
     footer = headers[-1].text
     for header in headers:
         title = header.text
         if len(title) < 75 and not title.isnumeric() and title[0].istitle():
             titles.append(title)
+        else:
+            remove_titles.append(title)
     for i in range(0, len(titles)):
         exhibit_search = re.search('xhi', titles[i])
         if exhibit_search:
@@ -51,15 +53,15 @@ def getSectionHeaders(casefile):
                 all_titles.append(False)
         if all(all_titles):
             final_headers.append(title)
-    return main_title.strip(), footer.strip(), final_headers
+    return main_title.strip(), footer.strip(), final_headers, remove_titles
 
-def parsePDF(casefile, verbose):
+def parsePDF(casefile):
     pdf_results = {}
     sections = []
-    main_title, footer, final_headers = getSectionHeaders(casefile)
+    main_title, footer, final_headers, remove_titles = getSectionHeaders(casefile)
     pdf_text = textract.process(casefile).decode()
-    cleaned_text = cleanText(pdf_text, main_title, footer)
-    with open(casefile[:-3] + 'txt', 'w') as text_file:
+    cleaned_text = cleanText(pdf_text, main_title, footer, remove_titles)
+    with open('results/' + casefile[:-4] + '/' + casefile[:-3] + 'txt', 'w') as text_file:
         text_file.write(cleaned_text)
     first_section = cleaned_text[cleaned_text.find(main_title):cleaned_text.find(final_headers[0])]
     sections.append({'title': 'Introduction', 'text': first_section.replace(main_title, '').strip()})
@@ -75,22 +77,36 @@ def parsePDF(casefile, verbose):
     pdf_results['sections'] = sections
     return pdf_results
 
-def cleanText(pdf_text, main_title, footer):
-    case_disclaimer1 = "This case was developed from published sources. Funding for the development of this case was provided by Harvard Business School, and not by the company."
-    case_disclaimer2 = "HBS cases are developed solely as the basis for class discussion. Cases are not intended to serve as endorsements, sources of primary data, or illustrations of effective or ineffective management."
-    phone1 = "1-800-5457685"
-    phone2 = "1-800-545-7685"
-    copyright = "Copyright © "
-    copyright1 = "President and Fellows of Harvard College."
-    copyright2 = "To order copies or request permission to reproduce materials, call"
-    copyright3 = "write Harvard Business School Publishing, Boston, MA 02163, or go to www.hbsp.harvard.edu/educators. "
-    copyright4 = "This publication may not be digitized, photocopied, or otherwise reproduced, posted, or transmitted, without the permission of Harvard Business School."
-    copyright5 = "write Harvard Business School Publishing, Boston, MA 02163, or go to http://www.hbsp.harvard.edu. No part of this publication may be reproduced, stored in a retrieval system, used in a spreadsheet, or transmitted in any form or by any means—electronic, mechanical, photocopying, recording, or otherwise—without the permission of Harvard Business School"
-    joined_text = pdf_text.replace('\n', ' ').replace('_', '').replace(phone1, '').replace(phone2, '').replace(case_disclaimer1, '').replace(case_disclaimer2, '').replace(copyright, '').replace(copyright1, '').replace(copyright2, '').replace(copyright3, '').replace(copyright4, '').replace(copyright5, '').replace(footer, '').split()
-    return ' '.join(joined_text)
+def fuzzy_replace(search_str, replace_str, orig_str):
+    l = len(search_str.split())
+    splitted = orig_str.split()
+    for i in range(len(splitted)-l+1):
+        test = " ".join(splitted[i:i+l])
+        if fuzz.ratio(search_str, test) > 75:
+            before = " ".join(splitted[:i])
+            after = " ".join(splitted[i+1:])
+            return before + " " + replace_str + " " + after
+        else:
+            return orig_str
+
+def cleanText(pdf_text, main_title, footer, remove_titles):
+    copyright_clause = "(Copyright)(.*)(permission of Harvard Business School)"
+    intention_clause = "(HBS cases)(.*)(effective or ineffective management)"
+    joined_text = pdf_text.replace('\n', ' ').replace('_', '').replace(footer, '').split()
+    joined_text = ' '.join(joined_text)
+    joined_text = re.sub(copyright_clause, '', joined_text)
+    joined_text = re.sub(intention_clause, '', joined_text)
+    for title in remove_titles:
+        joined_text = fuzzy_replace(title, '', joined_text)
+    return joined_text
+
+def convert(casefile):
+    if not os.path.isdir('results/' + casefile[:-4]):
+        os.mkdir('results/' + casefile[:-4])
+    pdf_results = parsePDF(casefile)
+    with open('results/' + casefile[:-4] + '/' + casefile[:-3] + 'json', 'w') as outfile:
+        outfile.write(json.dumps(pdf_results))
 
 if __name__ == '__main__':
-    casefile, verbose = parseArgs()
-    pdf_results = parsePDF(casefile[0], verbose)
-    with open(casefile[0][:-3] + 'json', 'w') as outfile:
-        outfile.write(json.dumps(pdf_results))
+    casefile = parseArgs()
+    convert(casefile[0])

@@ -2,3 +2,5 @@
 *.pdf
 *.txt
 env/
+results/
+uploads/
