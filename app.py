@@ -5,8 +5,8 @@ from werkzeug.utils import secure_filename
 from case2txt import convert
 from summarize import summarize
 
-UPLOAD_FOLDER = '/Users/johnkeck/Code/Python/casetldr/uploads'
-RESULTS_FOLDER = '/Users/johnkeck/Code/Python/casetldr/results'
+UPLOAD_FOLDER = '/code/uploads'
+RESULTS_FOLDER = '/code/results'
 ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
@@ -72,4 +72,4 @@ def uploaded_file(filename, sentences):
                                     filename)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, host='0.0.0.0')
