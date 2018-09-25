@@ -39,7 +39,7 @@ def summary(text, sentence_num):
     return '\n'.join(sentences)
 
 def summarize(casefile, sentence_num):
-    with open('results/' + casefile[:-4] + '/' + casefile[:-3] + 'json', 'r') as infile:
+    with open('/code/results/' + casefile[:-4] + '/' + casefile[:-3] + 'json', 'r') as infile:
         case = json.loads(infile.read())
         html_file = ['<html>']
         html_file.append('<header><title>' + case['title'] + '</title><h1>' + case['title'] + '</h1></header><body>')
@@ -50,9 +50,9 @@ def summarize(casefile, sentence_num):
             summary_text = summary(section['text'], sentence_num)
             html_file.append('<p>' + summary_text + '</p>')
             document.add_paragraph(summary_text)
-        document.save('results/' + casefile[:-4] + '/' + case['title'] + '.docx')
+        document.save('/code/results/' + casefile[:-4] + '/' + case['title'] + '.docx')
         html_file.append('</body></html>')
-        with open('results/'  + casefile[:-4] + '/' + casefile[:-3] + 'html', 'w') as html_output:
+        with open('/code/results/'  + casefile[:-4] + '/' + casefile[:-3] + 'html', 'w') as html_output:
             html_output.write(''.join(html_file))
 
 if __name__ == "__main__":

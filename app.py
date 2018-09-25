@@ -5,8 +5,8 @@ from werkzeug.utils import secure_filename
 from case2txt import convert
 from summarize import summarize
 
-UPLOAD_FOLDER = '/code/uploads'
-RESULTS_FOLDER = '/code/results'
+UPLOAD_FOLDER = 'uploads'
+RESULTS_FOLDER = 'results'
 ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
@@ -62,7 +62,9 @@ def upload_file():
 @app.route('/uploads/<filename>/<sentences>')
 def uploaded_file(filename, sentences):
     file = convert(filename)
+    print('Conversion...Done')
     summary = summarize(filename, sentences)
+    print('Summary...Done')
     result_path = app.config['RESULTS_FOLDER'] + '/' + filename[:-4] + '/' + filename[:-3] + 'html'
     if os.path.isfile(result_path):
         return send_from_directory(app.config['RESULTS_FOLDER'],
@@ -72,4 +74,8 @@ def uploaded_file(filename, sentences):
                                     filename)
 
 if __name__ == '__main__':
+    if not os.path.isdir(UPLOAD_FOLDER):
+        os.mkdir(UPLOAD_FOLDER)
+    if not os.path.isdir(RESULTS_FOLDER):
+        os.mkdir(RESULTS_FOLDER)
     app.run(debug=True, host='0.0.0.0')

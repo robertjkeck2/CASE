@@ -17,7 +17,7 @@ def parseArgs():
     return args.casefile
 
 def getSectionHeaders(casefile):
-    tree = pdftotree.parse(casefile, html_path=None, model_type=None, model_path=None, favor_figures=True, visualize=False)
+    tree = pdftotree.parse('/code/uploads/' + casefile, html_path=None, model_type=None, model_path=None, favor_figures=True, visualize=False)
     parsed_html = BeautifulSoup(tree, features='html.parser')
     headers = parsed_html.find_all('section_header')
     titles = []
@@ -59,9 +59,9 @@ def parsePDF(casefile):
     pdf_results = {}
     sections = []
     main_title, footer, final_headers, remove_titles = getSectionHeaders(casefile)
-    pdf_text = textract.process(casefile).decode()
+    pdf_text = textract.process('/code/uploads/' + casefile).decode()
     cleaned_text = cleanText(pdf_text, main_title, footer, remove_titles)
-    with open('results/' + casefile[:-4] + '/' + casefile[:-3] + 'txt', 'w') as text_file:
+    with open('/code/results/' + casefile[:-4] + '/' + casefile[:-3] + 'txt', 'w') as text_file:
         text_file.write(cleaned_text)
     first_section = cleaned_text[cleaned_text.find(main_title):cleaned_text.find(final_headers[0])]
     sections.append({'title': 'Introduction', 'text': first_section.replace(main_title, '').strip()})
@@ -101,10 +101,11 @@ def cleanText(pdf_text, main_title, footer, remove_titles):
     return joined_text
 
 def convert(casefile):
-    if not os.path.isdir('results/' + casefile[:-4]):
-        os.mkdir('results/' + casefile[:-4])
+    if not os.path.isdir('/code/results/' + casefile[:-4]):
+        os.mkdir('/code/results/' + casefile[:-4])
     pdf_results = parsePDF(casefile)
-    with open('results/' + casefile[:-4] + '/' + casefile[:-3] + 'json', 'w') as outfile:
+    print('Parsing...Done')
+    with open('/code/results/' + casefile[:-4] + '/' + casefile[:-3] + 'json', 'w') as outfile:
         outfile.write(json.dumps(pdf_results))
 
 if __name__ == '__main__':
