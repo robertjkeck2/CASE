@@ -38,7 +38,7 @@ def upload_file():
                                     filename=filename, sentences=sentences))
     return '''
     <!doctype html>
-    <title>CaseTLDR</title>
+    <title>CASE</title>
     <div style=padding:175px;font-family:courier>
     <div style=text-align:center;margin:auto;width:450px;height:100px;>
     <div style=border:solid;>
