@@ -39,13 +39,20 @@ def upload_file():
     return '''
     <!doctype html>
     <title>CaseTLDR</title>
-    <h1>Upload a Case (PDF format)</h1>
+    <div style=padding:175px;font-family:courier>
+    <div style=text-align:center;margin:auto;width:450px;height:100px;>
+    <div style=border:solid;>
+    <h1>Upload a Case</h1>
+    <p>.pdf format</p>
+    <br>
     <form method=post enctype=multipart/form-data id=uploadform>
-      <input type=file name=file>
+      <input type=file name=file display=hidden>
       <input type=submit value=Upload>
     </form>
-    <p># of sentences in summary</p>
-    <select name=sentences form=uploadform>
+    <br>
+    <hr>
+    <h4># of sentences in summary</h4>
+    <select name=sentences form=uploadform style=margin-bottom:10px;>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
@@ -57,6 +64,9 @@ def upload_file():
       <option value="9">9</option>
       <option value="10">10</option>
     </select>
+    </div>
+    </div>
+    </div>
     '''
 
 @app.route('/uploads/<filename>/<sentences>')
