@@ -42,16 +42,10 @@ def upload_file():
     <div style=padding:175px;font-family:courier>
     <div style=text-align:center;margin:auto;width:450px;height:100px;>
     <div style=border:solid;>
-    <h1>Upload a Case</h1>
-    <p>.pdf format</p>
-    <br>
-    <form method=post enctype=multipart/form-data id=uploadform>
-      <input type=file name=file display=hidden>
-      <input type=submit value=Upload>
-    </form>
-    <br>
+    <h1>CASE:</h1>
+    <h4>A Case Summarization Expert</h4>
     <hr>
-    <h4># of sentences in summary</h4>
+    <p># of sentences in summary</p>
     <select name=sentences form=uploadform style=margin-bottom:10px;>
       <option value="1">1</option>
       <option value="2">2</option>
@@ -64,9 +58,20 @@ def upload_file():
       <option value="9">9</option>
       <option value="10">10</option>
     </select>
+    <br>
+    <br>
+    <label for="uploadform" onMouseOver="this.style.backgroundColor='#ADD8E6'" onMouseOut="this.style.backgroundColor='#FFF'" style=cursor:pointer;border:solid;border-width:1px;border-radius:5px;padding:10px;>Choose a file (.pdf format)</label>
+    <br><br><div id="file-upload-filename"></div><br><br><label for="submitbutton" onMouseOver="this.style.fontSize='20px'" onMouseOut="this.style.fontSize='18px'" style=font-size:18px;background-color:#CED665;cursor:pointer;border:solid;border-width:1px;border-radius:5px;padding:10px;>Summarize!</label>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file style=opacity:0;position:absolute;z-index:-1; id=uploadform>
+      <input type=submit value=Submit style=opacity:0;position:absolute;z-index:-1; id=submitbutton>
+    </form>
+    <br>
+    <br>
     </div>
     </div>
     </div>
+    <script>var input = document.getElementById( 'uploadform' );var infoArea = document.getElementById( 'file-upload-filename' );input.addEventListener( 'change', showFileName );function showFileName( event ) {var input = event.srcElement;var fileName = input.files[0].name;infoArea.textContent = 'File name: ' + fileName;}</script>
     '''
 
 @app.route('/uploads/<filename>/<sentences>')
