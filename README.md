@@ -10,8 +10,10 @@ Dockerized Usage:
   `docker build CASE .`
 4. Run the container with port forwarding using the command:
   `docker run -p 5000:5000 CASE`
-5. Navigate to http://127.0.0.1:5000 and choose a .pdf file from Canvas.
-6. Select the desired number of sentences for each section and press Upload.
+5. Navigate to http://127.0.0.1:5000.
+6. Select the desired number of sentences for each section.
+7. Choose a file to upload (.pdf only).
+8. Once satisfied with your file selection, click Summarize!
 
 Non-Docker Usage:
 1. Download both the case2txt.py and summarize.py files, along with requirements.txt.
